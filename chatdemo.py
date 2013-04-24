@@ -14,6 +14,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import os
 import logging
 import tornado.auth
 import tornado.escape
@@ -168,6 +169,7 @@ def main():
         template_path=os.path.join(os.path.dirname(__file__), "templates"),
         static_path=os.path.join(os.path.dirname(__file__), "static"),
         xsrf_cookies=True,
+        debug=(os.environ.get('DEBUG', 'false') == 'true'),
         )
     app.listen(options.port)
     tornado.ioloop.IOLoop.instance().start()
