@@ -62,8 +62,7 @@ class MessageBuffer(object):
             self.cache = self.cache[-self.cache_size:]
 
 
-# Making this a non-singleton is left as an exercise for the reader.
-global_message_buffer = MessageBuffer()
+message_buffers = {}
 
 
 class BaseHandler(tornado.web.RequestHandler):
@@ -76,7 +75,7 @@ class BaseHandler(tornado.web.RequestHandler):
 class MainHandler(BaseHandler):
     @tornado.web.authenticated
     def get(self):
-        self.render("index.html", messages=global_message_buffer.cache)
+        self.render("index.html", rooms=message_buffers.keys())
 
 
 class MessageNewHandler(BaseHandler):
@@ -95,7 +94,7 @@ class MessageNewHandler(BaseHandler):
             self.redirect(self.get_argument("next"))
         else:
             self.write(message)
-        global_message_buffer.new_messages([message])
+        message_buffers[self.get_argument("room")].new_messages([message])
 
 
 class MessageUpdatesHandler(BaseHandler):
@@ -103,7 +102,8 @@ class MessageUpdatesHandler(BaseHandler):
     @tornado.web.asynchronous
     def post(self):
         cursor = self.get_argument("cursor", None)
-        global_message_buffer.wait_for_messages(self.on_new_messages,
+        self.room = self.get_argument("room")
+        message_buffers[self.room].wait_for_messages(self.on_new_messages,
                                                 cursor=cursor)
 
     def on_new_messages(self, messages):
@@ -113,7 +113,7 @@ class MessageUpdatesHandler(BaseHandler):
         self.finish(dict(messages=messages))
 
     def on_connection_close(self):
-        global_message_buffer.cancel_wait(self.on_new_messages)
+        message_buffers[self.room].cancel_wait(self.on_new_messages)
 
 
 class AuthLoginHandler(BaseHandler, tornado.auth.GoogleMixin):
@@ -135,6 +135,22 @@ class AuthLogoutHandler(BaseHandler):
         self.write("You are now logged out")
 
 
+class GoToRoomHandler(BaseHandler):
+    def post(self):
+        room = self.get_argument("room", None)
+        if room is not None:
+            self.redirect("/room/" + room.lower())
+        else:
+            self.redirect("/")
+
+
+class RoomHandler(BaseHandler):
+    def get(self, room):
+        if room not in message_buffers:
+            message_buffers[room] = MessageBuffer()
+        self.render("room.html", room=room, messages=message_buffers[room].cache)
+
+
 def main():
     parse_command_line()
     app = tornado.web.Application(
@@ -144,6 +160,8 @@ def main():
             (r"/auth/logout", AuthLogoutHandler),
             (r"/a/message/new", MessageNewHandler),
             (r"/a/message/updates", MessageUpdatesHandler),
+            (r"/room", GoToRoomHandler),
+            (r"/room/([a-z0-9_]+)", RoomHandler),
             ],
         cookie_secret="XD8BWhuTLgpzWKLtNiRjsGRhNwQqW7lXyS16AJXdmFv7WdZZYP",
         login_url="/auth/login",
