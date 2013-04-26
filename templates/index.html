@@ -1,3 +1,5 @@
+<h1>Welcome, {{ current_user['name'] }}</h1>
+
 <form action="/room" method="post">
 New Room Name: <input name="room"> <input type="submit" value="Create Room">
 {% module xsrf_form_html() %}

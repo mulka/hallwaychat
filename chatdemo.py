@@ -5,6 +5,7 @@ import tornado.auth
 import tornado.escape
 import tornado.ioloop
 import tornado.web
+import os
 import os.path
 import uuid
 
@@ -69,7 +70,7 @@ class MessageNewHandler(BaseHandler):
     def post(self):
         message = {
             "id": str(uuid.uuid4()),
-            "from": self.current_user["first_name"],
+            "from": self.current_user["username"],
             "body": self.get_argument("body"),
         }
         # to_basestring is necessary for Python 3's json encoder,
@@ -102,17 +103,19 @@ class MessageUpdatesHandler(BaseHandler):
         message_buffers[self.room].cancel_wait(self.on_new_messages)
 
 
-class AuthLoginHandler(BaseHandler, tornado.auth.GoogleMixin):
-    @tornado.web.asynchronous
-    @gen.coroutine
-    def get(self):
-        if self.get_argument("openid.mode", None):
-            user = yield self.get_authenticated_user()
-            self.set_secure_cookie("chatdemo_user",
-                                   tornado.escape.json_encode(user))
-            self.redirect("/")
-            return
-        self.authenticate_redirect(ax_attrs=["name"])
+class AuthLoginHandler(BaseHandler, tornado.auth.TwitterMixin):
+  @tornado.web.asynchronous
+  def get(self):
+    if self.get_argument("oauth_token", None):
+      self.get_authenticated_user(self.async_callback(self._on_auth))
+      return
+    self.authorize_redirect("/auth/login")
+
+  def _on_auth(self, user):
+    if not user:
+      raise tornado.web.HTTPError(500, "Twitter auth failed")
+    self.set_secure_cookie("chatdemo_user", tornado.escape.json_encode(user))
+    self.redirect("/")
 
 
 class AuthLogoutHandler(BaseHandler):
@@ -155,6 +158,8 @@ def main():
         static_path=os.path.join(os.path.dirname(__file__), "static"),
         xsrf_cookies=True,
         debug=(os.environ.get('DEBUG', 'false') == 'true'),
+        twitter_consumer_key=os.environ["TWITTER_CONSUMER_KEY"],
+        twitter_consumer_secret=os.environ["TWITTER_CONSUMER_SECRET"]
         )
     app.listen(options.port)
     tornado.ioloop.IOLoop.instance().start()
