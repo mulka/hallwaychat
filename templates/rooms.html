@@ -1,11 +1,17 @@
-<a href="/">HallwayChat</a> &rsaquo;
-<h1>Rooms</h1>
+{% module Template('header.html') %}
+<ul class="breadcrumb">
+  <li><a href="/">HallwayChat</a> <span class="divider">&rsaquo;</span></li>
+  <li class="active">Rooms</h1>
+</ul>
 
 {% if rooms %}
+  <ul>
   {% for room in rooms %}
-    <a href="/rooms/{{ room }}">{{ room }}</a><br>
+    <li><a href="/rooms/{{ room }}">{{ room }}</a></li>
   {% end %}
+</ul>
 {% else %}
-  <p>No rooms available. Would you like to create one?</p>
+  <div class="alert alert-info">No rooms available. Would you like to create one?</div>
   {% module Template('new_room_form.html') %}
 {% end %}
+{% module Template('footer.html') %}

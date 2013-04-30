@@ -1,6 +1,15 @@
-<h1>Welcome, <a href="https://twitter.com/{{ current_user['username'] }}">{{ current_user['name'] }}</a></h1>
+{% module Template('header.html') %}
+<div class="hero-unit">
+  <h1>Welcome, <a href="https://twitter.com/{{ current_user['username'] }}">{{ current_user['name'] }}</a></h1>
+  <br>
+  <p class="lead">Hallway Chat is an application that mimics the social experience of a tech conference like Codemash or PyCon.</p>
+  {% module Template('new_room_form.html') %}
+</div>
 
-{% module Template('new_room_form.html') %}
+<h2>Existing Rooms:</h2>
+<ul>
 {% for room in rooms %}
   <li><a href="/rooms/{{ room }}">{{ room }}</a></li>
 {% end %}
+</ul>
+{% module Template('footer.html') %}

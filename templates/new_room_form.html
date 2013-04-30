@@ -1,4 +1,6 @@
-<form action="/rooms" method="post">
-  <label for="room">New Room Name</label>: <input name="room" id="room"> <input type="submit" value="Create Room">
+<form action="/rooms" method="post" class="form-inline">
+  <label for="room">Enter a room name:</label>
+  <input name="room" id="room" class="input-large" placeholder="E.g. Startups">
+  <input type="submit" value="Create Room" class="btn btn-primary btn-small">
   {% module xsrf_form_html() %}
 </form>
