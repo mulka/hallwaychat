@@ -8,12 +8,32 @@ import tornado.web
 import os
 import os.path
 import uuid
+from collections import defaultdict
 
 from tornado import gen
 from tornado.options import define, options, parse_command_line
 
 define("port", default=8888, help="run on the given port", type=int)
 
+# room -> user list
+room_rosters = defaultdict(list)
+
+# user -> room
+user_locations = {}
+
+def join_room(room, user_obj):
+    user = user_obj["username"]
+    if user in user_locations:
+        remove_user(user_obj)
+
+    room_rosters[room].append(user)
+    user_locations[user] = room
+
+def remove_user(user_obj):
+    user = user_obj["username"]
+    room = user_locations[user]
+    room_rosters[room].remove(user)
+    del user_locations[user]
 
 class MessageBuffer(object):
     def __init__(self):
@@ -120,6 +140,7 @@ class AuthLoginHandler(BaseHandler, tornado.auth.TwitterMixin):
 
 class AuthLogoutHandler(BaseHandler):
     def get(self):
+        remove_user(self.current_user)
         self.clear_cookie("chatdemo_user")
         self.write("You are now logged out")
 
@@ -140,7 +161,8 @@ class RoomHandler(BaseHandler):
     def get(self, room):
         if room not in message_buffers:
             message_buffers[room] = MessageBuffer()
-        self.render("room.html", room=room, messages=message_buffers[room].cache)
+        join_room(room, self.current_user)
+        self.render("room.html", room=room, messages=message_buffers[room].cache, roster=room_rosters[room])
 
 
 def main():

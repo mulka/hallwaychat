@@ -4,6 +4,14 @@
     <li><a href="/rooms">Rooms</a> <span class="divider">&rsaquo;</span></li>
     <li class="active">{{ room }}</li>
   </ul>
+    <div id="roster_container">
+      <div id="roster_title">People</div>
+      <div id="roster">
+        {% for user in roster %}
+          @{{ user }}<br>
+        {% end %}
+      </div>
+    </div>
     <div id="body">
       <div class="container">
       <div id="inbox">
