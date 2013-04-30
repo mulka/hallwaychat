@@ -136,6 +136,7 @@ class RoomsHandler(BaseHandler):
 
 
 class RoomHandler(BaseHandler):
+    @tornado.web.authenticated
     def get(self, room):
         if room not in message_buffers:
             message_buffers[room] = MessageBuffer()
