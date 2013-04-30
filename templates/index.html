@@ -1,9 +1,6 @@
 <h1>Welcome, <a href="https://twitter.com/{{ current_user['username'] }}">{{ current_user['name'] }}</a></h1>
 
-<form action="/room" method="post">
-New Room Name: <input name="room"> <input type="submit" value="Create Room">
-{% module xsrf_form_html() %}
-</form>
+{% module Template('new_room_form.html') %}
 {% for room in rooms %}
-  <a href="/room/{{ room }}">{{ room }}</a><br>
+  <li><a href="/rooms/{{ room }}">{{ room }}</a></li>
 {% end %}

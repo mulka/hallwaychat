@@ -124,11 +124,13 @@ class AuthLogoutHandler(BaseHandler):
         self.write("You are now logged out")
 
 
-class GoToRoomHandler(BaseHandler):
+class RoomsHandler(BaseHandler):
+    def get(self):
+        self.render("rooms.html", rooms=message_buffers.keys())
     def post(self):
         room = self.get_argument("room", None)
         if room is not None:
-            self.redirect("/room/" + room.lower())
+            self.redirect("/rooms/" + room.lower())
         else:
             self.redirect("/")
 
@@ -149,8 +151,8 @@ def main():
             (r"/auth/logout", AuthLogoutHandler),
             (r"/a/message/new", MessageNewHandler),
             (r"/a/message/updates", MessageUpdatesHandler),
-            (r"/room", GoToRoomHandler),
-            (r"/room/([a-z0-9_]+)", RoomHandler),
+            (r"/rooms", RoomsHandler),
+            (r"/rooms/([a-z0-9_]+)", RoomHandler),
             ],
         cookie_secret="XD8BWhuTLgpzWKLtNiRjsGRhNwQqW7lXyS16AJXdmFv7WdZZYP",
         login_url="/auth/login",

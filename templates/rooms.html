@@ -1,0 +1,11 @@
+<a href="/">HallwayChat</a> &rsaquo;
+<h1>Rooms</h1>
+
+{% if rooms %}
+  {% for room in rooms %}
+    <a href="/rooms/{{ room }}">{{ room }}</a><br>
+  {% end %}
+{% else %}
+  <p>No rooms available. Would you like to create one?</p>
+  {% module Template('new_room_form.html') %}
+{% end %}
