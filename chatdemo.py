@@ -70,7 +70,7 @@ class MessageNewHandler(BaseHandler):
     def post(self):
         message = {
             "id": str(uuid.uuid4()),
-            "from": self.current_user["username"],
+            "from": '@' + self.current_user["username"],
             "body": self.get_argument("body"),
         }
         # to_basestring is necessary for Python 3's json encoder,
